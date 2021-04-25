@@ -24,11 +24,11 @@ public class JwtProvider {
             keyStore.load(resourceAsStream,"secret".toCharArray());
         }
         catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e){
-            throw new SpringRedditException("Exception occurred while loading keystore");
+            throw new SpringRedditException("Exception occurred while loading keystore: "+e);
         }
     }
     public String generateToken(Authentication authentication){
-        User principal = (User) authentication.getPrincipal();
+        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
         return Jwts.builder().setSubject(principal.getUsername()).signWith(getPrivateKey()).compact();
     }
     private PrivateKey getPrivateKey(){
