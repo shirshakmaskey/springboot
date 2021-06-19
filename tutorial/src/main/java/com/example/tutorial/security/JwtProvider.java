@@ -2,6 +2,7 @@ package com.example.tutorial.security;
 
 import com.example.tutorial.exception.SpringRedditException;
 import com.example.tutorial.model.User;
+import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.security.cert.CertificateException;
 
 @Service
 public class JwtProvider {
+
     private KeyStore keyStore;
 
     @PostConstruct
@@ -38,5 +40,23 @@ public class JwtProvider {
         catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e){
             throw new SpringRedditException("Exception occurred while while retrieving public key from keystore");
         }
+    }
+    public Boolean validateToken(String jwt){
+        Jwts.parserBuilder().setSigningKey(getPublicKey()).build().parseClaimsJws(jwt);
+        return true;
+    }
+
+    private PublicKey getPublicKey() {
+        try{
+            return keyStore.getCertificate("springblog").getPublicKey();
+        }
+        catch (KeyStoreException e){
+            throw new SpringRedditException("Exception occurred while retrieving public key");
+        }
+    }
+
+    public String getUsernameFromJwt(String token){
+        Claims claims = Jwts.parserBuilder().setSigningKey(getPublicKey()).build().parseClaimsJws(token).getBody();
+        return claims.getSubject();
     }
 }
